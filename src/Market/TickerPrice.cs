@@ -4,9 +4,16 @@ namespace Market
 {
     public class TickerPrice
     {
-        public TickerPrice()
+        public TickerPrice(DateTime? dateTime)
         {
-            DateTime = DateTime.UtcNow;
+            if (dateTime.HasValue)
+            {
+                DateTime = dateTime.Value;
+            }
+            else
+            {
+                DateTime = DateTime.UtcNow;
+            }
         }
 
         public string Price { get; set; }
