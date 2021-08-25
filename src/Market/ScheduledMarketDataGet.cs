@@ -5,29 +5,18 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Net;
 using System.Net.Http.Json;
-using InfluxData.Net.InfluxDb;
-using InfluxData.Net.Common.Enums;
-using InfluxData.Net.InfluxDb.Models;
-using System.Collections.Generic;
 
 namespace Market
 {
     public class ScheduledMarketDataGet : TimedHostedService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private InfluxDbClient clientDb;
+        private readonly MarketService _marketService;
 
-        public ScheduledMarketDataGet(IServiceProvider services, IHttpClientFactory httpClientFactory) : base(services)
+        public ScheduledMarketDataGet(IServiceProvider services, IHttpClientFactory httpClientFactory, MarketService marketService) : base(services)
         {
             _httpClientFactory = httpClientFactory;
-
-            // API Address, Account, Password for Connecting Influx Db
-            var infuxUrl = "http://influxdb:8086/";
-            var infuxUser = "admin";
-            var infuxPwd = "Welcome#123456";
-
-            // Create an instance of Influx DbClient
-            clientDb = new InfluxDbClient(infuxUrl, infuxUser, infuxPwd, InfluxDbVersion.v_1_3);
+            _marketService = marketService;
         }
 
         protected override TimeSpan Interval => TimeSpan.FromMinutes(1);
@@ -38,7 +27,7 @@ namespace Market
         {
             logger.LogInformation("ScheduledMarketDataGet Service is running job.");
             var price = GetLatestPriceAsync(logger).Result;
-            AddData(logger, price);
+            _marketService.Add(price);
             return Task.CompletedTask;
         }
 
@@ -67,22 +56,5 @@ namespace Market
             logger.LogInformation($"ScheduledMarketDataGet Service has gotten latest price of DateTime: {returnVal.DateTime}, Symbol: {returnVal.Symbol}, Price: {returnVal.Price}.");
             return returnVal;
         }
-
-        private async void AddData(ILogger logger, TickerPrice tickerPrice)
-        {
-            logger.LogInformation("ScheduledMarketDataGet Service AddData(price) Starting");
-            var point_model = new Point()
-            {
-                Name = "tickerprice", // table name
-                Tags = new Dictionary<string, object>() { { "Symbol", tickerPrice.Symbol } },
-                Fields = new Dictionary<string, object>() { { "Price", tickerPrice.Price } },
-                Timestamp = tickerPrice.DateTime
-            };
-            var dbName = "market";
-
-            var response = await clientDb.Client.WriteAsync(point_model, dbName);
-            logger.LogInformation("ScheduledMarketDataGet Service AddData(price) Finished");
-        }
     }
 }
-
