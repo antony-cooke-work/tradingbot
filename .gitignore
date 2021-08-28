@@ -355,3 +355,6 @@ MigrationBackup/
 
 # Docker compose
 **/docker-compose.override.yml
+
+# Visual Studio
+**/appsettings.*.json
