@@ -1,45 +1,53 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Market;
-using Microsoft.Extensions.Configuration;
 
-WebHost.CreateDefaultBuilder()
-    .ConfigureAppConfiguration((hostingContext, configuration) =>
+namespace Market
+{
+    public class Program
     {
-        configuration.Sources.Clear();
-
-        IHostEnvironment env = hostingContext.HostingEnvironment;
-
-        configuration
-            .AddJsonFile("appsettings.json")
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json")
-            .AddEnvironmentVariables()
-            .Build();
-    })
-    .ConfigureServices(s =>
-    {
-        s.AddHostedService<ScheduledMarketDataGet>();
-        s.AddHttpClient("ScheduledMarketDataGet", hc =>
+        public static void Main(string[] args)
         {
-            hc.BaseAddress = new System.Uri("https://api.binance.com/api/v3/ticker/price");
-        });
-        s.AddSingleton<MarketService>();
-    })
-    .Configure(
-        app =>
-        {
-            app.UseRouting();
-            app.UseEndpoints(e =>
-            {
-                var service = e.ServiceProvider.GetRequiredService<MarketService>();
-                e.MapGet("/markets/{id}",
-                    async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"])));
-            });
-        })
-    .Build()
-    .Run();
+            WebHost.CreateDefaultBuilder()
+                .ConfigureAppConfiguration((hostingContext, configuration) =>
+                {
+                    configuration.Sources.Clear();
+
+                    IHostEnvironment env = hostingContext.HostingEnvironment;
+
+                    configuration
+                        .AddJsonFile("appsettings.json")
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
+                        .AddEnvironmentVariables()
+                        .Build();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddHostedService<ScheduledMarketDataGet>();
+                    s.AddHttpClient("ScheduledMarketDataGet", hc =>
+                    {
+                        hc.BaseAddress = new System.Uri("https://api.binance.com/api/v3/ticker/price");
+                    });
+                    s.AddSingleton<MarketService>();
+                })
+                .Configure(
+                    app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(e =>
+                        {
+                            var service = e.ServiceProvider.GetRequiredService<MarketService>();
+                            e.MapGet("/markets/{id}",
+                                async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"])));
+                        });
+                    })
+                .Build()
+                .Run();
+        }
+    }
+}
