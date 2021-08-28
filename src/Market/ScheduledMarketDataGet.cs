@@ -19,9 +19,9 @@ namespace Market
             _marketService = marketService;
         }
 
-        protected override TimeSpan Interval => TimeSpan.FromMinutes(1);
+        protected override TimeSpan Interval => _marketService.GetInterval();
 
-        protected override TimeSpan FirstRunAfter => TimeSpan.FromSeconds(15);
+        protected override TimeSpan FirstRunAfter => _marketService.GetFirstRunAfter();
 
         protected override Task RunJobAsync(ILogger logger, IServiceProvider serviceProvider, CancellationToken stoppingToken)
         {

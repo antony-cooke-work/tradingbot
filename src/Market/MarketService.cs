@@ -14,6 +14,8 @@ namespace Market
     {
         private readonly ILogger<MarketService> _logger;
         private readonly InfluxDbClient _dbClient;
+        private readonly TimeSpan _firstrunafter;
+        private readonly TimeSpan _interval;
 
         public MarketService(ILogger<MarketService> logger, IConfiguration configuration)
         {
@@ -23,6 +25,18 @@ namespace Market
                 configuration.GetValue<string>("INFLUXDB_ADMIN_USER"),
                 configuration.GetValue<string>("INFLUXDB_ADMIN_PASSWORD"),
                 InfluxDbVersion.v_1_3);
+            _firstrunafter = TimeSpan.FromSeconds(configuration.GetValue<int>("FirstRunAfter"));
+            _interval = TimeSpan.FromSeconds(configuration.GetValue<int>("Interval"));
+        }
+
+        internal TimeSpan GetFirstRunAfter()
+        {
+            return _firstrunafter;
+        }
+
+        internal TimeSpan GetInterval()
+        {
+            return _interval;
         }
 
         public async Task<IEnumerable<TickerPrice>> Get(string symbol)
