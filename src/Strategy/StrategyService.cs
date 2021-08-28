@@ -1,5 +1,7 @@
-﻿using InfluxData.Net.InfluxDb;
+﻿using InfluxData.Net.Common.Enums;
+using InfluxData.Net.InfluxDb;
 using InfluxData.Net.InfluxDb.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,11 +14,29 @@ namespace Strategy
     {
         private readonly ILogger<StrategyService> _logger;
         private readonly InfluxDbClient _dbClient;
+        private readonly TimeSpan _firstrunafter;
+        private readonly TimeSpan _interval;
 
-        public StrategyService(ILogger<StrategyService> logger, InfluxDbClient dbClient)
+        public StrategyService(ILogger<StrategyService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _dbClient = dbClient;
+            _dbClient = new InfluxDbClient(
+                configuration.GetValue<string>("INFLUXDB_ENDPOINT_URI"),
+                configuration.GetValue<string>("INFLUXDB_ADMIN_USER"),
+                configuration.GetValue<string>("INFLUXDB_ADMIN_PASSWORD"),
+                InfluxDbVersion.v_1_3);
+            _firstrunafter = TimeSpan.FromSeconds(configuration.GetValue<int>("FirstRunAfter"));
+            _interval = TimeSpan.FromSeconds(configuration.GetValue<int>("Interval"));
+        }
+
+        public TimeSpan GetFirstRunAfter()
+        {
+            return _firstrunafter;
+        }
+
+        public TimeSpan GetInterval()
+        {
+            return _interval;
         }
 
         public async Task<IEnumerable<TickerPrice>> Get(string symbol)

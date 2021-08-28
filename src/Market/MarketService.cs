@@ -28,13 +28,12 @@ namespace Market
             _firstrunafter = TimeSpan.FromSeconds(configuration.GetValue<int>("FirstRunAfter"));
             _interval = TimeSpan.FromSeconds(configuration.GetValue<int>("Interval"));
         }
-
-        internal TimeSpan GetFirstRunAfter()
+        public TimeSpan GetFirstRunAfter()
         {
             return _firstrunafter;
         }
 
-        internal TimeSpan GetInterval()
+        public TimeSpan GetInterval()
         {
             return _interval;
         }

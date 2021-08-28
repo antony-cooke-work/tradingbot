@@ -4,20 +4,21 @@ networks:
   botnetwork:
 
 services:
-  influxdb:
+  marketdb:
     image: influxdb:1.3
-    container_name: influxdb
+    container_name: marketdb
     restart: always
     networks:
       - botnetwork
     ports:
       - 8086:8086
-      - 8082:8082
-      - 8083:8083
-      - 8089:8089/udp
+      #- 8082:8082
+      #- 8083:8083
+      #- 8089:8089/udp
     volumes:
-      - influxdb-volume:/vol01/Docker/market
+      - marketdb-volume:/vol01/Docker/market
     environment:
+      - INFLUXDB_HTTP_BIND_ADDRESS=:8086
       - INFLUXDB_DB=market
       - INFLUXDB_USER=market
       - INFLUXDB_ADMIN_ENABLED=true
@@ -25,7 +26,7 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=*****
   market:
     image: ${DOCKER_REGISTRY-}market
-    depends_on: [influxdb]
+    depends_on: [marketdb]
     networks:
       - botnetwork
     ports:
@@ -33,15 +34,35 @@ services:
     environment:
       - INFLUXDB_ADMIN_USER=*****
       - INFLUXDB_ADMIN_PASSWORD=*****
-      - INFLUXDB_ENDPOINT_URI=http://influxdb:8086/
+      - INFLUXDB_ENDPOINT_URI=http://marketdb:8086/
       - FirstRunAfter=25
       - Interval=60
     build:
       context: .
       dockerfile: Market/Dockerfile
+  strategydb:
+    image: influxdb:1.3
+    container_name: strategydb
+    restart: always
+    networks:
+      - botnetwork
+    ports:
+      - 8096:8086
+      #- 8082:8082
+      #- 8083:8083
+      #- 8089:8089/udp
+    volumes:
+      - strategydb-volume:/vol01/Docker/market
+    environment:
+      - INFLUXDB_HTTP_BIND_ADDRESS=:8096
+      - INFLUXDB_DB=market
+      - INFLUXDB_USER=market
+      - INFLUXDB_ADMIN_ENABLED=true
+      - INFLUXDB_ADMIN_USER=*****
+      - INFLUXDB_ADMIN_PASSWORD=*****
   strategy:
     image: ${DOCKER_REGISTRY-}strategy
-    depends_on: [influxdb]
+    depends_on: [strategydb]
     networks:
       - botnetwork
     ports:
@@ -49,11 +70,16 @@ services:
     environment:
       - INFLUXDB_ADMIN_USER=*****
       - INFLUXDB_ADMIN_PASSWORD=*****
-      - INFLUXDB_ENDPOINT_URI=http://influxdb:8086/
+      - INFLUXDB_ENDPOINT_URI=http://strategydb:8096/
+      - FirstRunAfter=25
+      - Interval=60
     build:
       context: .
       dockerfile: Strategy/Dockerfile
 
 volumes:
-  influxdb-volume:
+  marketdb-volume:
     external: true
+  strategydb-volume:
+    external: true
+

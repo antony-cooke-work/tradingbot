@@ -19,9 +19,9 @@ namespace Strategy
             _strategyService = strategyService;
         }
 
-        protected override TimeSpan Interval => TimeSpan.FromMinutes(1);
+        protected override TimeSpan Interval => _strategyService.GetInterval();
 
-        protected override TimeSpan FirstRunAfter => TimeSpan.FromSeconds(15);
+        protected override TimeSpan FirstRunAfter => _strategyService.GetFirstRunAfter();
 
         protected override Task RunJobAsync(ILogger logger, IServiceProvider serviceProvider, CancellationToken stoppingToken)
         {

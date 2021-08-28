@@ -6,8 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Market;
-using InfluxData.Net.InfluxDb;
-using InfluxData.Net.Common.Enums;
 using Microsoft.Extensions.Configuration;
 
 WebHost.CreateDefaultBuilder()
@@ -22,8 +20,6 @@ WebHost.CreateDefaultBuilder()
             .AddJsonFile($"appsettings.{env.EnvironmentName}.json")
             .AddEnvironmentVariables()
             .Build();
-
-        // IConfigurationRoot configurationRoot = configuration.Build();
     })
     .ConfigureServices(s =>
     {
