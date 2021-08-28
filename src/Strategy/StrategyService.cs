@@ -47,7 +47,7 @@ namespace Strategy
                 $"SELECT * FROM tickerprice WHERE Symbol = '{symbol}'"
             };
 
-            var response = await _dbClient.Client.QueryAsync(queries, "market");
+            var response = await _dbClient.Client.QueryAsync(queries, "strategy");
             var series = response.ToList();
             var list = series[0].Values;
             var prices = list.Select(x =>
@@ -61,18 +61,22 @@ namespace Strategy
             return prices;
         }
 
-        public async void Add(TickerPrice tickerPrice)
+        public async void Add(IEnumerable<TickerPrice> tickerPrices)
         {
-            _logger.LogInformation("StrategyService Service Add(tickerPrice) starting");
-            var point_model = new Point()
+            _logger.LogInformation("StrategyService Service Add(tickerPrices) starting");
+            foreach (var tickerPrice in tickerPrices)
             {
-                Name = "tickerprice", // table name
-                Tags = new Dictionary<string, object>() { { "Symbol", tickerPrice.Symbol } },
-                Fields = new Dictionary<string, object>() { { "Price", tickerPrice.Price } },
-                Timestamp = tickerPrice.DateTime
-            };
+                var point_model = new Point()
+                {
+                    Name = "tickerprice", // table name
+                    Tags = new Dictionary<string, object>() { { "Symbol", tickerPrice.Symbol } },
+                    Fields = new Dictionary<string, object>() { { "Price", tickerPrice.Price } },
+                    Timestamp = tickerPrice.DateTime
+                };
 
-            _ = await _dbClient.Client.WriteAsync(point_model, "market");
+                _ = await _dbClient.Client.WriteAsync(point_model, "strategy");
+            }
+
             _logger.LogInformation("StrategyService Service Add() finished");
         }
     }

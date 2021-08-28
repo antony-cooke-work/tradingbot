@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Net;
 using System.Net.Http.Json;
+using System.Collections.Generic;
 
 namespace Strategy
 {
@@ -26,17 +27,15 @@ namespace Strategy
         protected override Task RunJobAsync(ILogger logger, IServiceProvider serviceProvider, CancellationToken stoppingToken)
         {
             logger.LogInformation("ScheduledStrategyDataGet Service is running job.");
-            var price = GetLatestPriceAsync(logger).Result;
-            _strategyService.Add(price);
+            var prices = GetLatestPriceAsync(logger).Result;
+            _strategyService.Add(prices);
             return Task.CompletedTask;
         }
 
-        private async Task<TickerPrice> GetLatestPriceAsync(ILogger logger)
+        private async Task<IEnumerable<TickerPrice>> GetLatestPriceAsync(ILogger logger)
         {
             logger.LogInformation("ScheduledStrategyDataGet Service is getting latest price.");
-            var result = await _httpClientFactory.CreateClient("ScheduledStrategyDataGet").GetAsync("https://api.binance.com/api/v3/ticker/price?symbol=BTCGBP");
-            ///api/v3/avgPrice
-            //var res = await _httpHandler.GetAsync("https://api.binance.com/api/v3/avgPrice?symbol=BTCGBP");
+            var result = await _httpClientFactory.CreateClient("ScheduledStrategyDataGet").GetAsync("http://market/markets/BTCGBP");
             if (!result.IsSuccessStatusCode)
             {
                 string msg = await result.Content.ReadAsStringAsync();
@@ -51,9 +50,9 @@ namespace Strategy
                 return default;
             }
 
-            var returnVal = await result.Content.ReadFromJsonAsync<TickerPrice>();
+            var returnVal = await result.Content.ReadFromJsonAsync<IEnumerable<TickerPrice>>();
 
-            logger.LogInformation($"ScheduledStrategyDataGet Service has gotten latest price of DateTime: {returnVal.DateTime}, Symbol: {returnVal.Symbol}, Price: {returnVal.Price}.");
+            logger.LogInformation($"ScheduledStrategyDataGet Service has gotten latest prices");
             return returnVal;
         }
     }

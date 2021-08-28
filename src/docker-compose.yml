@@ -2,6 +2,8 @@ version: '3.4'
 
 networks:
   botnetwork:
+  marketnetwork:
+  strategynetwork:
 
 services:
   marketdb:
@@ -9,7 +11,7 @@ services:
     container_name: marketdb
     restart: always
     networks:
-      - botnetwork
+      - marketnetwork
     ports:
       - 8086:8086
       #- 8082:8082
@@ -28,6 +30,7 @@ services:
     image: ${DOCKER_REGISTRY-}market
     depends_on: [marketdb]
     networks:
+      - marketnetwork
       - botnetwork
     ports:
       - "5101:80"
@@ -45,18 +48,18 @@ services:
     container_name: strategydb
     restart: always
     networks:
-      - botnetwork
+      - strategynetwork
     ports:
       - 8096:8086
       #- 8082:8082
       #- 8083:8083
       #- 8089:8089/udp
     volumes:
-      - strategydb-volume:/vol01/Docker/market
+      - strategydb-volume:/vol01/Docker/strategy
     environment:
       - INFLUXDB_HTTP_BIND_ADDRESS=:8096
-      - INFLUXDB_DB=market
-      - INFLUXDB_USER=market
+      - INFLUXDB_DB=strategy
+      - INFLUXDB_USER=strategy
       - INFLUXDB_ADMIN_ENABLED=true
       - INFLUXDB_ADMIN_USER=*****
       - INFLUXDB_ADMIN_PASSWORD=*****
@@ -64,6 +67,7 @@ services:
     image: ${DOCKER_REGISTRY-}strategy
     depends_on: [strategydb]
     networks:
+      - strategynetwork
       - botnetwork
     ports:
       - "5102:80"
