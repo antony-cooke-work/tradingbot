@@ -1,5 +1,7 @@
-﻿using InfluxData.Net.InfluxDb;
+﻿using InfluxData.Net.Common.Enums;
+using InfluxData.Net.InfluxDb;
 using InfluxData.Net.InfluxDb.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,10 +15,14 @@ namespace Market
         private readonly ILogger<MarketService> _logger;
         private readonly InfluxDbClient _dbClient;
 
-        public MarketService(ILogger<MarketService> logger, InfluxDbClient dbClient)
+        public MarketService(ILogger<MarketService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _dbClient = dbClient;
+            _dbClient = new InfluxDbClient(
+                configuration.GetValue<string>("INFLUXDB_ENDPOINT_URI"),
+                configuration.GetValue<string>("INFLUXDB_ADMIN_USER"),
+                configuration.GetValue<string>("INFLUXDB_ADMIN_PASSWORD"),
+                InfluxDbVersion.v_1_3);
         }
 
         public async Task<IEnumerable<TickerPrice>> Get(string symbol)
