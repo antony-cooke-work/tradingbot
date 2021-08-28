@@ -1,7 +1,7 @@
 version: '3.4'
 
 networks:
-  marketnetwork:
+  botnetwork:
 
 services:
   influxdb:
@@ -9,7 +9,7 @@ services:
     container_name: influxdb
     restart: always
     networks:
-      - marketnetwork
+      - botnetwork
     ports:
       - 8086:8086
       - 8082:8082
@@ -27,11 +27,18 @@ services:
     image: ${DOCKER_REGISTRY-}market
     depends_on: [influxdb]
     networks:
-      - marketnetwork
+      - botnetwork
     build:
       context: .
       dockerfile: Market/Dockerfile
-
+  strategy:
+    image: ${DOCKER_REGISTRY-}strategy
+    depends_on: [influxdb]
+    networks:
+      - botnetwork
+    build:
+      context: .
+      dockerfile: Strategy/Dockerfile
 
 volumes:
   influxdb-volume:
