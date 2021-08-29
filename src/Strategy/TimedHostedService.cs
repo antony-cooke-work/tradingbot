@@ -39,6 +39,8 @@ namespace Strategy
 
         private async Task ExecuteTaskAsync(CancellationToken stoppingToken)
         {
+            _timer.Change(Interval, Timeout.InfiniteTimeSpan);
+
             try
             {
                 using (var scope = _services.CreateScope())
@@ -50,8 +52,6 @@ namespace Strategy
             {
                 _logger.LogError("BackgroundTask Failed", exception);
             }
-
-            _timer.Change(Interval, Timeout.InfiniteTimeSpan);
         }
 
         /// <summary>
