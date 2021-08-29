@@ -9,8 +9,10 @@
 2. docker image push dockerhubname/market:latest
 
 ## Useful cnds for Pi
-- docker pull reponame/strategy
+- docker-compose pull
 - docker-compose -f docker-compose.yaml up -d
 - docker-compose ps
+- docker-compose logs servicename
 - docker-compose logs --tail="all"
 - curl http://localhost:5101/markets/BTCGBP
+
