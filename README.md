@@ -16,4 +16,6 @@
 - docker-compose logs --tail="all"
 - curl http://localhost:5101/markets/BTCGBP
 - docker run --rm -it --entrypoint=/bin/bash dockerhubname/strategy
+- docker-compose down
+- docker-compose rm
 

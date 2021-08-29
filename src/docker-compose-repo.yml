@@ -79,7 +79,7 @@ services:
 
 volumes:
   marketdb-volume:
-    external: true
+    # external: true
   strategydb-volume:
-    external: true
+    # external: true
 
