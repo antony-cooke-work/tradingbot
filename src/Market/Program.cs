@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Market
 {
@@ -42,8 +43,8 @@ namespace Market
                         app.UseEndpoints(e =>
                         {
                             var service = e.ServiceProvider.GetRequiredService<MarketService>();
-                            e.MapGet("/markets/{id}",
-                                async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"])));
+                            e.MapGet("/markets/{id}/{fromdatetime?}/{todatetime?}",
+                                async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"], (string)s.Request.RouteValues["fromdatetime"], (string)s.Request.RouteValues["todatetime"])));
                         });
                     })
                 .Build()

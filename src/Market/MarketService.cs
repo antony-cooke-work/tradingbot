@@ -38,13 +38,26 @@ namespace Market
             return _interval;
         }
 
-        public async Task<IEnumerable<TickerPrice>> Get(string symbol)
+        public async Task<IEnumerable<TickerPrice>> Get(string symbol, string fromDateTimeString, string toDateTimeString)
         {
-            _logger.LogInformation($"MarketService Service Get({symbol})");
+            _logger.LogInformation($"MarketService Service Get({symbol}, {fromDateTimeString}, {toDateTimeString})");
+
             var queries = new[]
             {
                 $"SELECT * FROM tickerprice WHERE Symbol = '{symbol}'"
             };
+
+            if (DateTime.TryParse(fromDateTimeString, out DateTime fromDateTime))
+            {
+                queries[0] += $" and time >= '{fromDateTime:yyyy-MM-dd HH:mm:ss.mmm}'";
+            }
+
+            if (DateTime.TryParse(toDateTimeString, out DateTime toDateTime))
+            {
+                queries[0] += $" and time <= '{toDateTime:yyyy-MM-dd HH:mm:ss.mmm}'";
+            }
+
+            _logger.LogInformation($"queries[0]: {queries[0]}");
 
             var response = await _dbClient.Client.QueryAsync(queries, "market");
             var series = response.ToList();
