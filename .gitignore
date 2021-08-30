@@ -358,3 +358,7 @@ MigrationBackup/
 
 # Visual Studio
 **/appsettings.*.json
+
+# MSSQL and Visual Studio
+*.bin
+src/data/

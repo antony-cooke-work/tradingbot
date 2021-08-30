@@ -63,7 +63,7 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=*****
   strategy:
     image: reponame/strategy:latest
-    depends_on: [strategydb]
+    depends_on: [strategydb, market]
     networks:
       - strategynetwork
       - botnetwork
@@ -82,4 +82,3 @@ volumes:
     # external: true
   strategydb-volume:
     # external: true
-
