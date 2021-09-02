@@ -16,17 +16,19 @@ namespace Market
         private readonly InfluxDbClient _dbClient;
         private readonly TimeSpan _firstrunafter;
         private readonly TimeSpan _interval;
+        private readonly string _MARKETDB_DB;
 
         public MarketService(ILogger<MarketService> logger, IConfiguration configuration)
         {
             _logger = logger;
             _dbClient = new InfluxDbClient(
-                configuration.GetValue<string>("INFLUXDB_ENDPOINT_URI"),
-                configuration.GetValue<string>("INFLUXDB_ADMIN_USER"),
-                configuration.GetValue<string>("INFLUXDB_ADMIN_PASSWORD"),
+                configuration.GetValue<string>("MARKETDB_SERVER_ENDPOINT_URI"),
+                configuration.GetValue<string>("MARKETDB_USER"),
+                configuration.GetValue<string>("MARKETDB_PASSWORD"),
                 InfluxDbVersion.v_1_3);
             _firstrunafter = TimeSpan.FromSeconds(configuration.GetValue<int>("FirstRunAfter"));
             _interval = TimeSpan.FromSeconds(configuration.GetValue<int>("Interval"));
+            _MARKETDB_DB = configuration.GetValue<string>("MARKETDB_DBNAME");
         }
         public TimeSpan GetFirstRunAfter()
         {
@@ -59,7 +61,7 @@ namespace Market
 
             _logger.LogInformation($"queries[0]: {queries[0]}");
 
-            var response = await _dbClient.Client.QueryAsync(queries, "market");
+            var response = await _dbClient.Client.QueryAsync(queries, _MARKETDB_DB);
             var series = response.ToList();
             var list = series[0].Values;
             var prices = list.Select(x =>
@@ -75,7 +77,7 @@ namespace Market
 
         public async void Add(TickerPrice tickerPrice)
         {
-            _logger.LogInformation("MarketService Service Add(tickerPrice) starting");
+            _logger.LogInformation("MarketService Add(tickerPrice) starting");
             var point_model = new Point()
             {
                 Name = "tickerprice", // table name
@@ -84,8 +86,8 @@ namespace Market
                 Timestamp = tickerPrice.DateTime
             };
 
-            _ = await _dbClient.Client.WriteAsync(point_model, "market");
-            _logger.LogInformation("MarketService Service Add() finished");
+            _ = await _dbClient.Client.WriteAsync(point_model, _MARKETDB_DB);
+            _logger.LogInformation("MarketService Add() finished");
         }
     }
 }

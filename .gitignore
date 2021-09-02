@@ -362,3 +362,4 @@ MigrationBackup/
 # MSSQL and Visual Studio
 *.bin
 src/data/
+src/.env
