@@ -34,12 +34,13 @@ services:
     ports:
       - "5101:80"
     environment:
-      - MARKETDB_DBNAME=${MARKETDB_DBNAME}
-      - MARKETDB_USER=${MARKETDB_ADMIN_USER}
-      - MARKETDB_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
-      - MARKETDB_SERVER_ENDPOINT_URI=http://${MARKETDB_SERVER}:${MARKETDB_SERVER_HTTP_BIND_ADDRESS}/
-      - FirstRunAfter=25
-      - Interval=60
+      - DB_DBNAME=${MARKETDB_DBNAME}
+      - DB_USER=${MARKETDB_ADMIN_USER}
+      - DB_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
+      - DB_SERVER_ENDPOINT_URI=http://${MARKETDB_SERVER}:${MARKETDB_SERVER_HTTP_BIND_ADDRESS}/
+      - FIRSTRUN_AFTER=25
+      - RUN_INTERVAL=60
+      - EXCHANGE_URI=https://api.binance.com/api/v3/ticker/price
     build:
       context: .
       dockerfile: Market/Dockerfile

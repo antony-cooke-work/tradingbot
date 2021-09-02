@@ -14,30 +14,30 @@ namespace Market
     {
         private readonly ILogger<MarketService> _logger;
         private readonly InfluxDbClient _dbClient;
-        private readonly TimeSpan _firstrunafter;
-        private readonly TimeSpan _interval;
+        private readonly TimeSpan _FIRSTRUN_AFTER;
+        private readonly TimeSpan _RUN_INTERVAL;
         private readonly string _MARKETDB_DB;
 
         public MarketService(ILogger<MarketService> logger, IConfiguration configuration)
         {
             _logger = logger;
             _dbClient = new InfluxDbClient(
-                configuration.GetValue<string>("MARKETDB_SERVER_ENDPOINT_URI"),
-                configuration.GetValue<string>("MARKETDB_USER"),
-                configuration.GetValue<string>("MARKETDB_PASSWORD"),
+                configuration.GetValue<string>("DB_SERVER_ENDPOINT_URI"),
+                configuration.GetValue<string>("DB_USER"),
+                configuration.GetValue<string>("DB_PASSWORD"),
                 InfluxDbVersion.v_1_3);
-            _firstrunafter = TimeSpan.FromSeconds(configuration.GetValue<int>("FirstRunAfter"));
-            _interval = TimeSpan.FromSeconds(configuration.GetValue<int>("Interval"));
-            _MARKETDB_DB = configuration.GetValue<string>("MARKETDB_DBNAME");
+            _FIRSTRUN_AFTER = TimeSpan.FromSeconds(configuration.GetValue<int>("FIRSTRUN_AFTER"));
+            _RUN_INTERVAL = TimeSpan.FromSeconds(configuration.GetValue<int>("RUN_INTERVAL"));
+            _MARKETDB_DB = configuration.GetValue<string>("DB_DBNAME");
         }
         public TimeSpan GetFirstRunAfter()
         {
-            return _firstrunafter;
+            return _FIRSTRUN_AFTER;
         }
 
         public TimeSpan GetInterval()
         {
-            return _interval;
+            return _RUN_INTERVAL;
         }
 
         public async Task<IEnumerable<TickerPrice>> Get(string symbol, string fromDateTimeString, string toDateTimeString)

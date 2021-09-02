@@ -11,6 +11,8 @@ namespace Market
 {
     public class Program
     {
+        public IConfiguration Configuration { get; }
+
         public static void Main(string[] args)
         {
             WebHost.CreateDefaultBuilder()
@@ -25,15 +27,17 @@ namespace Market
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
                         .AddEnvironmentVariables()
                         .Build();
+
                 })
-                .ConfigureServices(s =>
+                .ConfigureServices((hostingContext, services) =>
                 {
-                    s.AddHostedService<ScheduledMarketDataGet>();
-                    s.AddHttpClient("ScheduledMarketDataGet", hc =>
+                    services.AddHostedService<ScheduledMarketDataGet>();
+                    var MARKET_EXCHANGE_URI = hostingContext.Configuration.GetValue<string>("EXCHANGE_URI");
+                    services.AddHttpClient("ScheduledMarketDataGet", hc =>
                     {
-                        hc.BaseAddress = new System.Uri("https://api.binance.com/api/v3/ticker/price");
+                        hc.BaseAddress = new System.Uri(MARKET_EXCHANGE_URI);
                     });
-                    s.AddSingleton<MarketService>();
+                    services.AddSingleton<MarketService>();
                 })
                 .Configure(
                     app =>
