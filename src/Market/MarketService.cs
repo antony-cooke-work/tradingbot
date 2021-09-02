@@ -1,11 +1,9 @@
-﻿using InfluxData.Net.Common.Enums;
-using InfluxData.Net.InfluxDb;
-using InfluxData.Net.InfluxDb.Models;
+﻿using InfluxDB.Client;
+using InfluxDB.Client.Api.Domain;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Market
@@ -13,22 +11,22 @@ namespace Market
     public class MarketService
     {
         private readonly ILogger<MarketService> _logger;
-        private readonly InfluxDbClient _dbClient;
+        private readonly InfluxDBClient _dbClient;
         private readonly TimeSpan _FIRSTRUN_AFTER;
         private readonly TimeSpan _RUN_INTERVAL;
-        private readonly string _MARKETDB_DB;
+        private readonly string _DB_ORGANISATION;
+        private readonly string _DB_BUCKET;
 
         public MarketService(ILogger<MarketService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _dbClient = new InfluxDbClient(
+            _dbClient = InfluxDBClientFactory.Create(
                 configuration.GetValue<string>("DB_SERVER_ENDPOINT_URI"),
-                configuration.GetValue<string>("DB_USER"),
-                configuration.GetValue<string>("DB_PASSWORD"),
-                InfluxDbVersion.v_1_3);
+                configuration.GetValue<string>("DB_TOKEN"));
             _FIRSTRUN_AFTER = TimeSpan.FromSeconds(configuration.GetValue<int>("FIRSTRUN_AFTER"));
             _RUN_INTERVAL = TimeSpan.FromSeconds(configuration.GetValue<int>("RUN_INTERVAL"));
-            _MARKETDB_DB = configuration.GetValue<string>("DB_DBNAME");
+            _DB_ORGANISATION = configuration.GetValue<string>("DB_ORGANISATION");
+            _DB_BUCKET = configuration.GetValue<string>("DB_BUCKET");
         }
         public TimeSpan GetFirstRunAfter()
         {
@@ -44,49 +42,35 @@ namespace Market
         {
             _logger.LogInformation($"MarketService Service Get({symbol}, {fromDateTimeString}, {toDateTimeString})");
 
-            var queries = new[]
-            {
-                $"SELECT * FROM tickerprice WHERE Symbol = '{symbol}'"
-            };
+            var flux = $"from(bucket:\"{_DB_BUCKET}\") ";
 
             if (DateTime.TryParse(fromDateTimeString, out DateTime fromDateTime))
             {
-                queries[0] += $" and time >= '{fromDateTime:yyyy-MM-dd HH:mm:ss.mmm}'";
+                flux += $"|> range(start: {fromDateTime:yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'} ";
+            }
+            else
+            {
+                flux += "|> range(start: -1y ";
             }
 
             if (DateTime.TryParse(toDateTimeString, out DateTime toDateTime))
             {
-                queries[0] += $" and time <= '{toDateTime:yyyy-MM-dd HH:mm:ss.mmm}'";
+                flux += $", end: {toDateTime:yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'} ";
             }
 
-            _logger.LogInformation($"queries[0]: {queries[0]}");
+            flux += ") ";
+            flux += $"|> filter(fn: (r) => r[\"symbol\"] == \"{symbol}\")";
 
-            var response = await _dbClient.Client.QueryAsync(queries, _MARKETDB_DB);
-            var series = response.ToList();
-            var list = series[0].Values;
-            var prices = list.Select(x =>
-            new TickerPrice
-            {
-                DateTime = (DateTime)x[0],
-                Symbol = (string)x[2],
-                Price = (string)x[1],
-            });
+            _logger.LogInformation($"queries[0]: {flux}");
 
-            return prices;
+            var response = await  _dbClient.GetQueryApi().QueryAsync<TickerPrice>(flux, _DB_ORGANISATION);
+            return response;
         }
 
         public async void Add(TickerPrice tickerPrice)
         {
             _logger.LogInformation("MarketService Add(tickerPrice) starting");
-            var point_model = new Point()
-            {
-                Name = "tickerprice", // table name
-                Tags = new Dictionary<string, object>() { { "Symbol", tickerPrice.Symbol } },
-                Fields = new Dictionary<string, object>() { { "Price", tickerPrice.Price } },
-                Timestamp = tickerPrice.DateTime
-            };
-
-            _ = await _dbClient.Client.WriteAsync(point_model, _MARKETDB_DB);
+            await _dbClient.GetWriteApiAsync().WriteMeasurementAsync(_DB_BUCKET, _DB_ORGANISATION, WritePrecision.S, tickerPrice);
             _logger.LogInformation("MarketService Add() finished");
         }
     }

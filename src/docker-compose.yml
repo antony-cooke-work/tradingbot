@@ -7,24 +7,25 @@ networks:
 
 services:
   marketdb:
-    image: influxdb:1.3
+    image: influxdb:2.0.7
     container_name: ${MARKETDB_SERVER}
     restart: always
     networks:
       - marketnetwork
     ports:
-      - :${MARKETDB_HTTP_BIND_ADDRESS}:8086
+      - :${MARKETDB_SERVER_HTTP_BIND_ADDRESS}:8086
       #- 8082:8082
       #- 8083:8083
       #- 8089:8089/udp
     volumes:
       - marketdb-volume:/vol01/Docker/market
     environment:
-      - INFLUXDB_HTTP_BIND_ADDRESS=:${MARKETDB_SERVER_HTTP_BIND_ADDRESS}
-      - INFLUXDB_DB=${MARKETDB_DBNAME}
-      - INFLUXDB_ADMIN_ENABLED=true
-      - INFLUXDB_ADMIN_USER=${MARKETDB_ADMIN_USER}
-      - INFLUXDB_ADMIN_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_ORG=${MARKETDB_ORGANISATION}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${MARKETDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${MARKETDB_ADMIN_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
+      # - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
   market:
     image: ${DOCKER_REGISTRY-}market
     depends_on: [marketdb]
@@ -34,10 +35,12 @@ services:
     ports:
       - "5101:80"
     environment:
-      - DB_DBNAME=${MARKETDB_DBNAME}
+      - DB_ORGANISATION=${MARKETDB_ORGANISATION}
+      - DB_BUCKET=${MARKETDB_BUCKET}
       - DB_USER=${MARKETDB_ADMIN_USER}
       - DB_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
       - DB_SERVER_ENDPOINT_URI=http://${MARKETDB_SERVER}:${MARKETDB_SERVER_HTTP_BIND_ADDRESS}/
+      - DB_TOKEN=${MARKET_API_TOKEN}
       - FIRSTRUN_AFTER=25
       - RUN_INTERVAL=60
       - EXCHANGE_URI=https://api.binance.com/api/v3/ticker/price
