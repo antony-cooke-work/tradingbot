@@ -7,7 +7,7 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY [".", "Strategy/"]
+COPY ["./Strategy", "Strategy/"]
 RUN dotnet restore "Strategy/Strategy.csproj"
 WORKDIR "/src/Strategy"
 RUN dotnet build "Strategy.csproj" -c Release -o /app/build
