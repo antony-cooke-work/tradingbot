@@ -28,11 +28,10 @@ namespace Strategy
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddHostedService<ScheduledStrategyDataGet>();
-                    s.AddHttpClient("ScheduledStrategyDataGet", hc =>
-                    {
-                        hc.BaseAddress = new System.Uri("https://api.binance.com/api/v3/ticker/price");
-                    });
+                    //s.AddHttpClient("ScheduledStrategyDataGet", hc =>
+                    //{
+                    //    hc.BaseAddress = new System.Uri("https://api.binance.com/api/v3/ticker/price");
+                    //});
                     s.AddSingleton<StrategyService>();
                 })
                 .Configure(
@@ -42,8 +41,8 @@ namespace Strategy
                         app.UseEndpoints(e =>
                         {
                             var service = e.ServiceProvider.GetRequiredService<StrategyService>();
-                            e.MapGet("/strategys/{id}",
-                                async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"])));
+                            //e.MapGet("/strategys/{id}",
+                            //    async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"])));
                         });
                     })
                 .Build()

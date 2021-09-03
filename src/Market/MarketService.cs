@@ -50,7 +50,7 @@ namespace Market
             }
             else
             {
-                flux += "|> range(start: -1y ";
+                flux += "|> range(start: 0 ";
             }
 
             if (DateTime.TryParse(toDateTimeString, out DateTime toDateTime))
@@ -62,17 +62,52 @@ namespace Market
             flux += $"|> filter(fn: (r) => r[\"symbol\"] == \"{symbol}\") ";
             flux += "|> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")";
 
-            _logger.LogInformation($"queries[0]: {flux}");
+            _logger.LogInformation($"flux: {flux}");
 
-            var response = await  _dbClient.GetQueryApi().QueryAsync<TickerPrice>(flux, _DB_ORGANISATION);
+            var response = await _dbClient.GetQueryApi().QueryAsync<TickerPrice>(flux, _DB_ORGANISATION);
             return response;
         }
 
         public async void Add(TickerPrice tickerPrice)
         {
             _logger.LogInformation("MarketService Add(tickerPrice) starting");
+            tickerPrice.DateTime = tickerPrice.DateTime.AddSeconds(-tickerPrice.DateTime.Second);
             await _dbClient.GetWriteApiAsync().WriteMeasurementAsync(_DB_BUCKET, _DB_ORGANISATION, WritePrecision.S, tickerPrice);
             _logger.LogInformation("MarketService Add() finished");
+        }
+
+        public async Task<IEnumerable<TickerPrice>> SimpleMovingAverages(string symbol, string start, string stop, string every, string period)
+        {
+            _logger.LogInformation($"MarketService SimpleMovingAverages({symbol}, {start}, {every}, {period}) starting");
+
+            var flux = $"from(bucket: \"{_DB_BUCKET}\")";
+
+            if (DateTime.TryParse(start, out DateTime fromDateTime))
+            {
+                flux += $"|> range(start: {fromDateTime:yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'} ";
+            }
+            else
+            {
+                flux += $"|> range(start: {start} ";
+            }
+
+            if (DateTime.TryParse(stop, out DateTime toDateTime))
+            {
+                flux += $", stop: {toDateTime:yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'}) ";
+            }
+            else
+            {
+                flux += $", stop: {stop}) ";
+            }
+
+            flux += $"|> filter(fn: (r) => r[\"symbol\"] == \"{symbol}\") " +
+                $"|> timedMovingAverage(every: {every}, period: {period}) " +
+                "|> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")";
+
+            _logger.LogInformation($"flux: {flux}");
+
+            var response = await _dbClient.GetQueryApi().QueryAsync<TickerPrice>(flux, _DB_ORGANISATION);
+            return response;
         }
     }
 }

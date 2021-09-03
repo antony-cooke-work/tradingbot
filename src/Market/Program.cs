@@ -46,10 +46,24 @@ namespace Market
                         app.UseEndpoints(e =>
                         {
                             var service = e.ServiceProvider.GetRequiredService<MarketService>();
-                            e.MapGet("/markets/{id}/{fromdatetime?}/{todatetime?}",
-                                async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"], (string)s.Request.RouteValues["fromdatetime"], (string)s.Request.RouteValues["todatetime"])));
-                        });
-                    })
+
+                            e.MapGet("/prices/{id}/{fromdatetime?}/{todatetime?}",
+                                    async s => await s.Response.WriteAsJsonAsync(
+                                        await service.Get(
+                                            (string)s.Request.RouteValues["id"], 
+                                            (string)s.Request.RouteValues["fromdatetime"], 
+                                            (string)s.Request.RouteValues["todatetime"])));
+
+                            e.MapGet("/smas/{id}/{start?}/{stop?}/{every?}/{period?}",
+                                    async s => await s.Response.WriteAsJsonAsync(
+                                        await service.SimpleMovingAverages(
+                                            (string)s.Request.RouteValues["id"], 
+                                            (string)s.Request.RouteValues["start"],
+                                            (string)s.Request.RouteValues["stop"],
+                                            (string)s.Request.RouteValues["every"], 
+                                            (string)s.Request.RouteValues["period"])));
+                            });
+                        })
                 .Build()
                 .Run();
         }
