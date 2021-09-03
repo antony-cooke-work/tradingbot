@@ -59,7 +59,8 @@ namespace Market
             }
 
             flux += ") ";
-            flux += $"|> filter(fn: (r) => r[\"symbol\"] == \"{symbol}\")";
+            flux += $"|> filter(fn: (r) => r[\"symbol\"] == \"{symbol}\") ";
+            flux += "|> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")";
 
             _logger.LogInformation($"queries[0]: {flux}");
 
