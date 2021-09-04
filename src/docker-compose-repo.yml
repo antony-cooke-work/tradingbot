@@ -27,7 +27,7 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
       # - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
   market:
-    image: ###/market:latest
+    image: ${DOCKERHUB_REGISTRY}/market:latest
     depends_on: [marketdb]
     container_name: market
     networks:
@@ -47,7 +47,7 @@ services:
       - EXCHANGE_URI=https://api.binance.com
 
   strategy:
-    image: ###/strategy:latest
+    image: ${DOCKERHUB_REGISTRY}/strategy:latest
     depends_on: [market]
     container_name: strategy
     networks:
