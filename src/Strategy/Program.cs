@@ -26,13 +26,14 @@ namespace Strategy
                         .AddEnvironmentVariables()
                         .Build();
                 })
-                .ConfigureServices(s =>
+                .ConfigureServices((hostingContext, services) =>
                 {
-                    //s.AddHttpClient("ScheduledStrategyDataGet", hc =>
-                    //{
-                    //    hc.BaseAddress = new System.Uri("https://api.binance.com/api/v3/ticker/price");
-                    //});
-                    s.AddSingleton<StrategyService>();
+                    var MARKET_API_URI = hostingContext.Configuration.GetValue<string>("MARKET_API_URI");
+                    services.AddHttpClient("StrategyService", hc =>
+                    {
+                        hc.BaseAddress = new System.Uri(MARKET_API_URI);
+                    });
+                    services.AddSingleton<StrategyService>();
                 })
                 .Configure(
                     app =>
@@ -41,8 +42,17 @@ namespace Strategy
                         app.UseEndpoints(e =>
                         {
                             var service = e.ServiceProvider.GetRequiredService<StrategyService>();
-                            //e.MapGet("/strategys/{id}",
-                            //    async s => await s.Response.WriteAsJsonAsync(await service.Get((string)s.Request.RouteValues["id"])));
+                            //e.MapGet("/smai/{id}/{start}/{stop}/{shorttermevery}/{shorttermperiod}/{longtermevery}/{longtermperiod}",
+                            e.MapGet("/smai/{id}/{start}/{stop}/{shorttermevery}/{shorttermperiod}/{longtermevery}/{longtermperiod}",
+                                async s => await s.Response.WriteAsJsonAsync(
+                                    await service.GetMovingAverageIndicatorAsync(
+                                        (string)s.Request.RouteValues["id"], 
+                                        (string)s.Request.RouteValues["start"], 
+                                        (string)s.Request.RouteValues["stop"], 
+                                        (string)s.Request.RouteValues["shorttermevery"], 
+                                        (string)s.Request.RouteValues["shorttermperiod"], 
+                                        (string)s.Request.RouteValues["longtermevery"], 
+                                        (string)s.Request.RouteValues["longtermperiod"])));
                         });
                     })
                 .Build()

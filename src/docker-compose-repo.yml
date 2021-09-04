@@ -3,16 +3,16 @@ version: '3.4'
 networks:
   botnetwork:
   marketnetwork:
-  strategynetwork:
 
 services:
   marketdb:
-    image: influxdb:1.3
-    container_name: marketdb
+    image: influxdb:2.0.7
+    container_name: ${MARKETDB_SERVER}
     restart: always
     networks:
       - marketnetwork
     ports:
+      # - :${MARKETDB_SERVER_HTTP_BIND_ADDRESS}:8086
       - 8086:8086
       #- 8082:8082
       #- 8083:8083
@@ -20,65 +20,58 @@ services:
     volumes:
       - marketdb-volume:/vol01/Docker/market
     environment:
-      - INFLUXDB_HTTP_BIND_ADDRESS=:8086
-      - INFLUXDB_DB=market
-      - INFLUXDB_USER=market
-      - INFLUXDB_ADMIN_ENABLED=true
-      - INFLUXDB_ADMIN_USER=*****
-      - INFLUXDB_ADMIN_PASSWORD=*****
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_ORG=${MARKETDB_ORGANISATION}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${MARKETDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${MARKETDB_ADMIN_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
+      # - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
   market:
-    image: reponame/market:latest
+    image: ###/market:latest
     depends_on: [marketdb]
+    container_name: market
     networks:
       - marketnetwork
       - botnetwork
     ports:
       - "5101:80"
     environment:
-      - INFLUXDB_ADMIN_USER=*****
-      - INFLUXDB_ADMIN_PASSWORD=*****
-      - INFLUXDB_ENDPOINT_URI=http://marketdb:8086/
-      - FirstRunAfter=25
-      - Interval=60
+      - DB_ORGANISATION=${MARKETDB_ORGANISATION}
+      - DB_BUCKET=${MARKETDB_BUCKET}
+      - DB_USER=${MARKETDB_ADMIN_USER}
+      - DB_PASSWORD=${MARKETDB_ADMIN_PASSWORD}
+      - DB_SERVER_ENDPOINT_URI=http://${MARKETDB_SERVER}:${MARKETDB_SERVER_HTTP_BIND_ADDRESS}/
+      - DB_TOKEN=${MARKET_API_TOKEN}
+      - FIRSTRUN_AFTER=25
+      - RUN_INTERVAL=60
+      - EXCHANGE_URI=https://api.binance.com
 
-  strategydb:
-    image: influxdb:1.3
-    container_name: strategydb
-    restart: always
-    networks:
-      - strategynetwork
-    ports:
-      - 8096:8086
-      #- 8082:8082
-      #- 8083:8083
-      #- 8089:8089/udp
-    volumes:
-      - strategydb-volume:/vol01/Docker/strategy
-    environment:
-      - INFLUXDB_HTTP_BIND_ADDRESS=:8096
-      - INFLUXDB_DB=strategy
-      - INFLUXDB_USER=strategy
-      - INFLUXDB_ADMIN_ENABLED=true
-      - INFLUXDB_ADMIN_USER=*****
-      - INFLUXDB_ADMIN_PASSWORD=*****
   strategy:
-    image: reponame/strategy:latest
-    depends_on: [strategydb, market]
+    image: ###/strategy:latest
+    depends_on: [market]
+    container_name: strategy
     networks:
-      - strategynetwork
       - botnetwork
     ports:
       - "5102:80"
     environment:
-      - INFLUXDB_ADMIN_USER=*****
-      - INFLUXDB_ADMIN_PASSWORD=*****
-      - INFLUXDB_ENDPOINT_URI=http://strategydb:8096/
-      - FirstRunAfter=25
-      - Interval=60
+      - MARKET_API_URI=http://market
 
+  #mssql:
+  #  image: mcr.microsoft.com/azure-sql-edge
+  #  container_name: "mssql"
+  #  user: root
+  #  restart: always
+  #  environment:
+  #    - ACCEPT_EULA=Y
+  #    - MSSQL_SA_PASSWORD=*****
+  #  volumes:
+  #    - ./data/mssql/data/:/var/opt/mssql/data
+  #    - ./data/mssql/log/:/var/opt/mssql/log
+  #    - ./data/mssql/secrets/:/var/opt/mssql/secrets
+  #  ports:
+  #    - 1433:1433
 
 volumes:
   marketdb-volume:
-    # external: true
-  strategydb-volume:
-    # external: true
+    external: true

@@ -34,7 +34,7 @@ namespace Market
         private async Task<TickerPrice> GetLatestPriceAsync(ILogger logger)
         {
             logger.LogInformation("ScheduledMarketDataGet Service is getting latest price.");
-            var result = await _httpClientFactory.CreateClient("ScheduledMarketDataGet").GetAsync("https://api.binance.com/api/v3/ticker/price?symbol=BTCGBP");
+            var result = await _httpClientFactory.CreateClient("ScheduledMarketDataGet").GetAsync("/api/v3/ticker/price?symbol=BTCGBP");
             ///api/v3/avgPrice
             //var res = await _httpHandler.GetAsync("https://api.binance.com/api/v3/avgPrice?symbol=BTCGBP");
             if (!result.IsSuccessStatusCode)

@@ -14,10 +14,16 @@
 - docker-compose ps
 - docker-compose logs servicename
 - docker-compose logs --tail="all"
-- curl http://localhost:5101/markets/BTCGBP
+- curl http://localhost:5101/prices/BTCGBP
 - docker run --rm -it --entrypoint=/bin/bash dockerhubname/strategy
 - docker-compose down
 - docker-compose rm
+
+### Delete all containers
+- docker rm -f $(docker ps -a -q)
+
+### Delete all volumes
+- docker volume rm $(docker volume ls -q)
 
 ## Useful cmds for InfluxDB
 - influx delete --org tradingbot --bucket market --start '1970-01-01T00:00:00Z'  --stop $(date +"%Y-%m-%dT%H:%M:%SZ")
