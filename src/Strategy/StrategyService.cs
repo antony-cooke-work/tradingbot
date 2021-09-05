@@ -24,7 +24,7 @@ namespace Strategy
             _httpClient = httpClientFactory.CreateClient("StrategyService");
         }
 
-        public async Task<string> GetMovingAverageIndicatorAsync(
+        public async Task<MovingAverageIndicatorResponse> GetMovingAverageIndicatorAsync(
             string symbol, 
             string start, 
             string stop, 
@@ -44,17 +44,14 @@ namespace Strategy
 
             var shortTerm =  await GetMovingAverage(symbol,start, stop, shortTermEvery, shortTermPeriod);
             var longTerm = await GetMovingAverage(symbol, start, stop, longTermEvery, longTermPeriod);
-
-            if (shortTerm > longTerm)
-                return "BUY";
-
-            return "SELL";
+            var action = (shortTerm.Item1.Price > longTerm.Item1.Price) ? "BUY" : "SELL";
+            return new MovingAverageIndicatorResponse(shortTerm.Item1, longTerm.Item1, shortTerm.Item2, action);
         }
 
-        private async Task<double> GetMovingAverage(string symbol, string start, string stop, string every, string period)
+        private async Task<Tuple<TickerPrice, TickerPrice>> GetMovingAverage(string symbol, string start, string stop, string every, string period)
         {
             _logger.LogInformation($"StrategyService GetMovingAverage(symbol: {symbol}, start: {start}, stop: {stop}, every: {every}, period: {period})");
-            //(string symbol, string start, string stop, string every, string period)
+
             var result = await _httpClient.GetAsync($"/smas/{symbol}/{start}/{stop}/{every}/{period}");
             if (!result.IsSuccessStatusCode)
             {
@@ -71,7 +68,7 @@ namespace Strategy
             }
 
             var smas = await result.Content.ReadFromJsonAsync<IEnumerable<TickerPrice>>();
-            return smas.Reverse().ElementAtOrDefault(1).Price;
+            return new Tuple<TickerPrice, TickerPrice>(smas.Reverse().ElementAtOrDefault(1), smas.LastOrDefault());
         }
     }
 }

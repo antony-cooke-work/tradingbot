@@ -42,7 +42,6 @@ namespace Strategy
                         app.UseEndpoints(e =>
                         {
                             var service = e.ServiceProvider.GetRequiredService<StrategyService>();
-                            //e.MapGet("/smai/{id}/{start}/{stop}/{shorttermevery}/{shorttermperiod}/{longtermevery}/{longtermperiod}",
                             e.MapGet("/smai/{id}/{start}/{stop}/{shorttermevery}/{shorttermperiod}/{longtermevery}/{longtermperiod}",
                                 async s => await s.Response.WriteAsJsonAsync(
                                     await service.GetMovingAverageIndicatorAsync(
