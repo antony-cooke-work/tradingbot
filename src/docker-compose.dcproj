@@ -9,9 +9,6 @@
     <DockerServiceName>market</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="docker-compose-repo.override.yml">
-      <DependentUpon>docker-compose-repo.yml</DependentUpon>
-    </None>
     <None Include="docker-compose-repo.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>

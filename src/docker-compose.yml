@@ -3,6 +3,7 @@ version: '3.4'
 networks:
   botnetwork:
   marketnetwork:
+  tradernetwork:
 
 services:
   marketdb:
@@ -12,8 +13,8 @@ services:
     networks:
       - marketnetwork
     ports:
-      # - :${MARKETDB_SERVER_HTTP_BIND_ADDRESS}:8086
-      - 8086:8086
+      - ${MARKETDB_SERVER_HTTP_BIND_ADDRESS}:8086
+      #- 8086:8086
       #- 8082:8082
       #- 8083:8083
       #- 8089:8089/udp
@@ -28,12 +29,13 @@ services:
       # - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
   market:
     image: ${DOCKER_REGISTRY-}market
+    container_name: market
     depends_on: [marketdb]
     networks:
       - marketnetwork
       - botnetwork
     ports:
-      - "5101:80"
+      - ${MARKET_PORT}:80
     environment:
       - DB_ORGANISATION=${MARKETDB_ORGANISATION}
       - DB_BUCKET=${MARKETDB_BUCKET}
@@ -50,16 +52,61 @@ services:
 
   strategy:
     image: ${DOCKER_REGISTRY-}strategy
+    container_name: strategy
     depends_on: [market]
     networks:
       - botnetwork
     ports:
-      - "5102:80"
+      - ${STRATEGY_PORT}:80
     environment:
       - MARKET_API_URI=http://market
     build:
       context: .
       dockerfile: Strategy/Dockerfile
+
+  traderdb:
+    image: influxdb:2.0.7
+    container_name: ${TRADERDBSERVER}
+    restart: always
+    networks:
+      - tradernetwork
+    ports:
+      - ${TRADERDBSERVER_HTTP_BIND_ADDRESS}:8086
+      #- 8092:8082
+      #- 8093:8083
+      #- 8099:8089/udp
+    volumes:
+      - traderdb-volume:/vol01/Docker/trader
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_ORG=${TRADERDBORGANISATION}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${TRADERDBBUCKET}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${TRADERDBADMIN_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${TRADERDBADMIN_PASSWORD}
+      # - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
+  trader:
+    image: ${DOCKER_REGISTRY-}trader
+    container_name: trader
+    depends_on: [traderdb, strategy]
+    networks:
+      - tradernetwork
+      - botnetwork
+    ports:
+      - ${TRADER_PORT}:80
+    environment:
+      - DB_ORGANISATION=${TRADERDBORGANISATION}
+      - DB_BUCKET=${TRADERDBBUCKET}
+      - DB_USER=${TRADERDBADMIN_USER}
+      - DB_PASSWORD=${TRADERDBADMIN_PASSWORD}
+      - DB_SERVER_ENDPOINT_URI=http://${TRADERDBSERVER}:${TRADERDBSERVER_HTTP_BIND_ADDRESS}/
+      - DB_TOKEN=${TRADER_API_TOKEN}
+      - FIRSTRUN_AFTER=25
+      - RUN_INTERVAL=60
+      - MARKET_API_URI=http://market
+      - STRATEGY_API_URI=http://strategy
+    build:
+      context: .
+      dockerfile: Trader/Dockerfile
 
   #mssql:
   #  image: mcr.microsoft.com/azure-sql-edge
@@ -78,4 +125,6 @@ services:
 
 volumes:
   marketdb-volume:
+    external: true
+  traderdb-volume:
     external: true

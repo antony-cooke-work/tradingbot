@@ -10,11 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="InfluxDB.Client" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\strategy.domain\strategy.domain.csproj" />
+    <ProjectReference Include="..\trader.domain\trader.domain.csproj" />
   </ItemGroup>
 
 </Project>

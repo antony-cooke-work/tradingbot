@@ -33,14 +33,14 @@ namespace strategy.domain.tests
             new WeightedMovingAverageCalculateTestSource(
                 new TickerPrice[]
                 {
-                    new TickerPrice(91, DateTime.Now.AddMinutes(1)),
-                    new TickerPrice(90, DateTime.Now.AddMinutes(2)),
-                    new TickerPrice(89, DateTime.Now.AddMinutes(3)),
-                    new TickerPrice(88, DateTime.Now.AddMinutes(4)),
-                    new TickerPrice(90, DateTime.Now.AddMinutes(5)),
+                    new TickerPrice { Price = 91, DateTime = DateTime.Now.AddMinutes(1) },
+                    new TickerPrice { Price = 90, DateTime = DateTime.Now.AddMinutes(2) },
+                    new TickerPrice { Price = 89, DateTime = DateTime.Now.AddMinutes(3) },
+                    new TickerPrice { Price = 88, DateTime = DateTime.Now.AddMinutes(4) },
+                    new TickerPrice { Price = 90, DateTime = DateTime.Now.AddMinutes(5) },
                 },
                 15,
-                89.33333333333333333333333333m)
+                89.33333333333333333333333333)
             };
         }
 
@@ -51,13 +51,13 @@ namespace strategy.domain.tests
             new WeightedMovingAverageCalculateTestSource(
                 new TickerPrice[]
                 {
-                    new TickerPrice(69, DateTime.Now.AddMinutes(2)),
-                    new TickerPrice(68, DateTime.Now.AddMinutes(3)),
-                    new TickerPrice(66, DateTime.Now.AddMinutes(4)),
-                    new TickerPrice(70, DateTime.Now.AddMinutes(5)),
+                    new TickerPrice { Price = 69, DateTime = DateTime.Now.AddMinutes(2) },
+                    new TickerPrice { Price = 68, DateTime = DateTime.Now.AddMinutes(3) },
+                    new TickerPrice { Price = 66, DateTime = DateTime.Now.AddMinutes(4) },
+                    new TickerPrice { Price = 70, DateTime = DateTime.Now.AddMinutes(5) },
                 },
                 10,
-                68.30m)
+                68.30)
             };
         }
 
@@ -68,16 +68,16 @@ namespace strategy.domain.tests
             new WeightedMovingAverageCalculateTestSource(
                 new TickerPrice[]
                 {
-                    new TickerPrice(50.25m, DateTime.Now.AddMinutes(1)),
-                    new TickerPrice(56.39m, DateTime.Now.AddMinutes(2)),
-                    new TickerPrice(58.91m, DateTime.Now.AddMinutes(3)),
-                    new TickerPrice(61.52m, DateTime.Now.AddMinutes(4)),
-                    new TickerPrice(59.32m, DateTime.Now.AddMinutes(5)),
-                    new TickerPrice(55.43m, DateTime.Now.AddMinutes(6)),
-                    new TickerPrice(54.65m, DateTime.Now.AddMinutes(7)),
+                    new TickerPrice { Price = 50.25, DateTime = DateTime.Now.AddMinutes(1) },
+                    new TickerPrice { Price = 56.39, DateTime = DateTime.Now.AddMinutes(2) },
+                    new TickerPrice { Price = 58.91, DateTime = DateTime.Now.AddMinutes(3) },
+                    new TickerPrice { Price = 61.52, DateTime = DateTime.Now.AddMinutes(4) },
+                    new TickerPrice { Price = 59.32, DateTime = DateTime.Now.AddMinutes(5) },
+                    new TickerPrice { Price = 55.43, DateTime = DateTime.Now.AddMinutes(6) },
+                    new TickerPrice { Price = 54.65, DateTime = DateTime.Now.AddMinutes(7) },
                 },
                 28,
-                57.056071428571428571428571429m)
+                57.05607142857142)
             };
         }
 
@@ -88,12 +88,12 @@ namespace strategy.domain.tests
             new WeightedMovingAverageCalculateTestSource(
                 new TickerPrice[]
                 {
-                    new TickerPrice(5m, DateTime.Now.AddMinutes(5)),
-                    new TickerPrice(4m, DateTime.Now.AddMinutes(6)),
-                    new TickerPrice(8m, DateTime.Now.AddMinutes(7)),
+                    new TickerPrice { Price = 5, DateTime = DateTime.Now.AddMinutes(5) },
+                    new TickerPrice { Price = 4, DateTime = DateTime.Now.AddMinutes(6) },
+                    new TickerPrice { Price = 8, DateTime = DateTime.Now.AddMinutes(7) },
                 },
                 6,
-                6.1666666666666666666666666667m)
+                6.166666666666666)
             };
         }
 
@@ -104,19 +104,19 @@ namespace strategy.domain.tests
             new WeightedMovingAverageCalculateTestSource(
                 new TickerPrice[]
                 {
-                    new TickerPrice(70, DateTime.Now.AddMinutes(5)),
-                    new TickerPrice(69, DateTime.Now.AddMinutes(2)),
-                    new TickerPrice(66, DateTime.Now.AddMinutes(4)),
-                    new TickerPrice(68, DateTime.Now.AddMinutes(3)),
+                    new TickerPrice { Price = 70, DateTime = DateTime.Now.AddMinutes(5) },
+                    new TickerPrice { Price = 69, DateTime = DateTime.Now.AddMinutes(2) },
+                    new TickerPrice { Price = 66, DateTime = DateTime.Now.AddMinutes(4) },
+                    new TickerPrice { Price = 68, DateTime = DateTime.Now.AddMinutes(3) },
                 },
                 10,
-                68.30m)
+                68.30)
             };
         }
 
         public class WeightedMovingAverageCalculateTestSource : TestSource
         {
-            public WeightedMovingAverageCalculateTestSource(TickerPrice[] prices, int weight, decimal expectedResult, [CallerMemberName] string testName = null)
+            public WeightedMovingAverageCalculateTestSource(TickerPrice[] prices, int weight, double expectedResult, [CallerMemberName] string testName = null)
                 : base(testName)
             {
                 Prices = prices;
@@ -126,7 +126,7 @@ namespace strategy.domain.tests
 
             public TickerPrice[] Prices { get; }
             public int Weight { get; }
-            public decimal ExpectedResult { get; }
+            public double ExpectedResult { get; }
         }
     }
 }

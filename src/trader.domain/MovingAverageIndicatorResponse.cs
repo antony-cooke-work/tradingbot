@@ -1,4 +1,4 @@
-﻿namespace Strategy
+﻿namespace trader.domain
 {
     public class MovingAverageIndicatorResponse
     {

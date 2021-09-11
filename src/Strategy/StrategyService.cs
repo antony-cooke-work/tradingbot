@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using strategy.domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +17,8 @@ namespace Strategy
         private readonly HttpClient _httpClient;
 
         public StrategyService(
-            ILogger<StrategyService> logger, 
-            IConfiguration configuration, 
+            ILogger<StrategyService> logger,
+            IConfiguration configuration,
             IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
@@ -25,12 +26,12 @@ namespace Strategy
         }
 
         public async Task<MovingAverageIndicatorResponse> GetMovingAverageIndicatorAsync(
-            string symbol, 
-            string start, 
-            string stop, 
-            string shortTermEvery, 
-            string shortTermPeriod, 
-            string longTermEvery, 
+            string symbol,
+            string start,
+            string stop,
+            string shortTermEvery,
+            string shortTermPeriod,
+            string longTermEvery,
             string longTermPeriod)
         {
             _logger.LogInformation($"StrategyService GetMovingAverageIndicator(" +
@@ -42,7 +43,7 @@ namespace Strategy
                 $"shortTermEvery: {longTermEvery}, " +
                 $"shortTermPeriod: {longTermPeriod})");
 
-            var shortTerm =  await GetMovingAverage(symbol,start, stop, shortTermEvery, shortTermPeriod);
+            var shortTerm = await GetMovingAverage(symbol, start, stop, shortTermEvery, shortTermPeriod);
             var longTerm = await GetMovingAverage(symbol, start, stop, longTermEvery, longTermPeriod);
             var action = (shortTerm.Item1.Price > longTerm.Item1.Price) ? "BUY" : "SELL";
             return new MovingAverageIndicatorResponse(shortTerm.Item1, longTerm.Item1, shortTerm.Item2, action);
